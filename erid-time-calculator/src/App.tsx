@@ -14,7 +14,6 @@ function App() {
     minutes: 0,
     seconds: 0
   });
-  const [tab1Radio, setTab1Radio] = useState<number>(0);
 
   // Tab 2 state: Erid to Earth time
   const [eridTime, setEridTime] = useState({
@@ -54,16 +53,15 @@ function App() {
   function getEridianTimeDifference() {
     const startTime = refEpoch === 'anj' ? new Date('2026-01-07T08:00:00Z') : new Date('2026-07-20T15:00:00Z');
     let timeDiff = 0;
+    let currentIsPositive = true;
     if (startTime.getTime() > Date.parse(earthTime)) {
-      setIsPositive(false);
+      currentIsPositive = false;
       timeDiff = (startTime.getTime() - Date.parse(earthTime));
     }
     else {
-      setIsPositive(true);
+      currentIsPositive = true;
       timeDiff = (Date.parse(earthTime) - startTime.getTime());
     }
-
-    console.log(timeDiff);
     const eridianSecondLength = 2336;
 
     let totalEridianSeconds = Math.floor(timeDiff / (eridianSecondLength));
@@ -84,11 +82,9 @@ function App() {
     const eridianHexaSeconds = generateEridianBase6Number(Math.floor(timeInEridianMinute / 6));
     const timeInEridianHexaSecond = timeInEridianMinute % 6;
     const eridianSeconds = generateEridianBase6Number(timeInEridianHexaSecond);
-
-    console.log(eridianYears, eridianMonths, eridianWeeks, eridianDays, eridianHours, eridianHexaMinutes, eridianMinutes, eridianHexaSeconds, eridianSeconds);
     
     let timeStr = '';
-    if (isPositive) {
+    if (currentIsPositive) {
       timeStr = `${eridianYears}${eridianMonths}${eridianWeeks}${eridianDays}${eridianHours}${eridianHexaMinutes}${eridianMinutes}${eridianHexaSeconds}${eridianSeconds}`;
     }
     else {
@@ -178,8 +174,8 @@ function App() {
                     type="radio" 
                     name="tab1Radio" 
                     value={0}
-                    checked={tab1Radio === 0}
-                    onChange={(e) => setTab1Radio(Number(e.target.value))}
+                    checked={refEpoch === 'anj'}
+                    onChange={(e) => setRefEpoch('anj')}
                   />
                   <span className="radio-custom"></span>
                   Base-Anj Time
@@ -189,8 +185,8 @@ function App() {
                     type="radio" 
                     name="tab1Radio" 
                     value={1}
-                    checked={tab1Radio === 1}
-                    onChange={(e) => setTab1Radio(Number(e.target.value))}
+                    checked={refEpoch === 'nutanix'}
+                    onChange={(e) => setRefEpoch('nutanix')}
                   />
                   <span className="radio-custom"></span>
                   Base-Nutanix Time
