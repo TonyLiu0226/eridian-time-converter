@@ -259,6 +259,18 @@
   align-items: center;
 }
 
+.result-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.result-time {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
 .radio-group {
   display: flex;
   flex-direction: row;

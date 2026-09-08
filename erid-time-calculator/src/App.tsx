@@ -31,17 +31,71 @@ function App() {
   const [tab2Radio, setTab2Radio] = useState('standard');
   const [isPositive, setIsPositive] = useState(true);
 
-  function getEridianTimeDifference() {
-    const startTime = new Date('2026-07-20T15:00:00Z');
-    const now = new Date();
-    const timeDiff = Math.abs(now.getTime() - startTime.getTime());
+  const [finalTimeResult, setFinalTimeResult] = useState('');
 
+  const [refEpoch, setRefEpoch] = useState<'anj' | 'nutanix'>('anj');
+
+  function generateEridianBase6Number(num: number): string {
     const symbols = ['ℓ', 'I', 'V', 'λ', '+', '∀'];
+    if (num < 0) throw new Error("Number must be non-negative");
+    if (num === 0) return symbols[0];
+    
+    let result = '';
+    let currentNum = num;
+    while (currentNum > 0) {
+      const remainder = currentNum % 6;
+      // Prepend the remainder so the most significant digit is on the left
+      result = symbols[remainder] + result;
+      currentNum = Math.floor(currentNum / 6);
+    }
+    return result;
+  }
+
+  function getEridianTimeDifference() {
+    const startTime = refEpoch === 'anj' ? new Date('2026-01-07T08:00:00Z') : new Date('2026-07-20T15:00:00Z');
+    let timeDiff = 0;
+    if (startTime.getTime() > Date.parse(earthTime)) {
+      setIsPositive(false);
+      timeDiff = (startTime.getTime() - Date.parse(earthTime));
+    }
+    else {
+      setIsPositive(true);
+      timeDiff = (Date.parse(earthTime) - startTime.getTime());
+    }
+
+    console.log(timeDiff);
     const eridianSecondLength = 2336;
 
-    let totalEridianSeconds = timeDiff / eridianSecondLength;
-    const eridianYears = totalEridianSeconds / (6 * 6 * 6 * 6 * 6 * 6 * 6 * 6);
-    // Note: Other calculations follow similarly...
+    let totalEridianSeconds = Math.floor(timeDiff / (eridianSecondLength));
+    const eridianYears = generateEridianBase6Number(Math.floor(totalEridianSeconds / (6 ** 8)));
+    const timeInEridianYear = totalEridianSeconds % (6 ** 8);
+    const eridianMonths = generateEridianBase6Number(Math.floor(timeInEridianYear / (6 ** 7)));
+    const timeInEridianMonth = timeInEridianYear % (6 ** 7);
+    const eridianWeeks = generateEridianBase6Number(Math.floor(timeInEridianMonth / (6 ** 6)));
+    const timeInEridianWeek = timeInEridianMonth % (6 ** 6);  
+    const eridianDays = generateEridianBase6Number(Math.floor(timeInEridianWeek / (6 ** 5)));
+    const timeInEridianDay = timeInEridianWeek % (6 ** 5);
+    const eridianHours = generateEridianBase6Number(Math.floor(timeInEridianDay / (6 ** 4)));
+    const timeInEridianHour = timeInEridianDay % (6 ** 4);
+    const eridianHexaMinutes = generateEridianBase6Number(Math.floor(timeInEridianHour / (6 ** 3)));
+    const timeInEridianHexaMinute = timeInEridianHour % (6 ** 3);
+    const eridianMinutes = generateEridianBase6Number(Math.floor(timeInEridianHexaMinute / (6 ** 2)));
+    const timeInEridianMinute = timeInEridianHexaMinute % (6 ** 2);
+    const eridianHexaSeconds = generateEridianBase6Number(Math.floor(timeInEridianMinute / 6));
+    const timeInEridianHexaSecond = timeInEridianMinute % 6;
+    const eridianSeconds = generateEridianBase6Number(timeInEridianHexaSecond);
+
+    console.log(eridianYears, eridianMonths, eridianWeeks, eridianDays, eridianHours, eridianHexaMinutes, eridianMinutes, eridianHexaSeconds, eridianSeconds);
+    
+    let timeStr = '';
+    if (isPositive) {
+      timeStr = `${eridianYears}${eridianMonths}${eridianWeeks}${eridianDays}${eridianHours}${eridianHexaMinutes}${eridianMinutes}${eridianHexaSeconds}${eridianSeconds}`;
+    }
+    else {
+      timeStr = `-${eridianYears}${eridianMonths}${eridianWeeks}${eridianDays}${eridianHours}${eridianHexaMinutes}${eridianMinutes}${eridianHexaSeconds}${eridianSeconds}`;
+    }
+    console.log(timeStr);
+    setFinalTimeResult(timeStr);
   }
 
   const handleAmountChange = (field: keyof typeof amountTime, value: string) => {
@@ -51,6 +105,12 @@ function App() {
   const handleEridChange = (field: keyof typeof eridTime, value: string) => {
     setEridTime(prev => ({ ...prev, [field]: Number(value) }));
   };
+
+  useEffect(() => {
+    if(activeTab === 0 &&earthTime !== '') {
+      getEridianTimeDifference();
+    }
+  }, [earthTime, refEpoch]);
 
   return (
     <div className="app-container">
@@ -136,6 +196,11 @@ function App() {
                   Base-Nutanix Time
                 </label>
               </div>
+              {finalTimeResult && (
+              <div className="result-section animate-fade-in">
+                <h3>Eridian Time:</h3>
+                <p className="result-time">{finalTimeResult}</p>
+              </div>)}
             </div>
           )}
 
