@@ -94,6 +94,31 @@ function App() {
     setFinalTimeResult(timeStr);
   }
 
+  function getEarthTimeDifference() {
+    //calculates the total number of eridian seconds
+    let eridianSeconds = eridTime.years * (6 ** 8) + 
+    eridTime.months * (6 ** 7) + 
+    eridTime.weeks * (6 ** 6) + 
+    eridTime.days * (6 ** 5) + 
+    eridTime.hours * (6 ** 4) + 
+    eridTime.hexaminutes * (6 ** 3) + 
+    eridTime.minutes * (6 ** 2) + 
+    eridTime.hexaseconds * 6 + 
+    eridTime.seconds;
+
+    //multiplies by eridianSecondLength to get number of earth seconds
+    const eridianSecondLength = 2336;
+    let earthSeconds = eridianSeconds * eridianSecondLength;
+    if (!isPositive) {
+      earthSeconds = -earthSeconds;
+    }
+    //convert to absolute earth time based on refEpoch
+    const startTime = refEpoch === 'anj' ? new Date('2026-01-07T08:00:00Z') : new Date('2026-07-20T15:00:00Z');
+
+    let finalEarthTime = new Date(startTime.getTime() + earthSeconds);
+    setFinalTimeResult(finalEarthTime.toISOString().slice(0, -1));
+  }
+
   const handleEarthChange = (value: string) => {
     setEarthTime(value);
     setAmountTime({years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 0});
@@ -225,21 +250,93 @@ function App() {
               <div className="form-group">
                 <label>Eridian Time Units</label>
                 <div className="grid-inputs erid-grid">
-                  {Object.keys(eridTime).map((key) => (
-                    <div className="input-group" key={key}>
-                      <input 
-                        type="number" 
-                        value={eridTime[key as keyof typeof eridTime]} 
-                        onChange={(e) => handleEridChange(key as keyof typeof eridTime, e.target.value)}
-                        className="input-field"
-                        min="0"
-                      />
-                      <span className="input-label">{key}</span>
-                    </div>
-                  ))}
+                  {Object.keys(eridTime).map((key) => {
+                    const isYears = key === 'years';
+                    const maxVal = isYears ? Infinity : 5;
+                    const currentValue = eridTime[key as keyof typeof eridTime];
+
+                    const handleIncrement = () => {
+                      if (currentValue < maxVal) {
+                        handleEridChange(key as keyof typeof eridTime, String(currentValue + 1));
+                      }
+                    };
+
+                    const handleDecrement = () => {
+                      if (currentValue > 0) {
+                        handleEridChange(key as keyof typeof eridTime, String(currentValue - 1));
+                      }
+                    };
+
+                    return (
+                      <div className="input-group" key={key}>
+                        <div className="input-wrapper">
+                          <input 
+                            type="text" 
+                            value={generateEridianBase6Number(currentValue)} 
+                            readOnly
+                            onKeyDown={(e) => {
+                              if (e.key === 'ArrowUp') {
+                                e.preventDefault();
+                                handleIncrement();
+                              } else if (e.key === 'ArrowDown') {
+                                e.preventDefault();
+                                handleDecrement();
+                              }
+                            }}
+                            className="input-field"
+                          />
+                          <div className="custom-spinner">
+                            <button className="spinner-btn" onClick={handleIncrement} tabIndex={-1}>
+                              <svg className="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 15l-6-6-6 6"/></svg>
+                            </button>
+                            <button className="spinner-btn" onClick={handleDecrement} tabIndex={-1}>
+                              <svg className="spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+                            </button>
+                          </div>
+                        </div>
+                        <span className="input-label">{key}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
+              <button 
+                onClick={() => getEarthTimeDifference()}
+                className='submit-btn'
+              >
+                Calculate Time
+              </button>
+
+              <div className="explanation-text">
+                <h3>Choose which reference time to use:</h3>
+                <p>Base-Anj time sets the epoch (timestamp 0) at 08:00:00 UTC on January 7, 2026.</p>
+                <p>Base-Nutanix time sets the epoch at 15:00:00 UTC on July 20, 2026.</p>
+              </div>
+              <div className="form-group radio-group">
+                <label className="radio-label">
+                  <input 
+                    type="radio" 
+                    name="tab1Radio" 
+                    value={0}
+                    checked={refEpoch === 'anj'}
+                    onChange={(e) => setRefEpoch('anj')}
+                  />
+                  <span className="radio-custom"></span>
+                  Base-Anj Time
+                </label>
+                <label className="radio-label">
+                  <input 
+                    type="radio" 
+                    name="tab1Radio" 
+                    value={1}
+                    checked={refEpoch === 'nutanix'}
+                    onChange={(e) => setRefEpoch('nutanix')}
+                  />
+                  <span className="radio-custom"></span>
+                  Base-Nutanix Time
+                </label>
+              </div>
               <div className="flex-row">
                 <div className="form-group toggle-group">
                   <label>Value Sign</label>
@@ -252,6 +349,11 @@ function App() {
                   </button>
                 </div>
               </div>
+              {finalTimeResult && (
+              <div className="result-section animate-fade-in">
+                <h3>Eridian Time:</h3>
+                <p className="result-time">{finalTimeResult}</p>
+              </div>)}
             </div>
           )}
         </div>

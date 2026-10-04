@@ -243,6 +243,62 @@
   background: transparent;
 }
 
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.custom-spinner {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  opacity: 0.3;
+  transition: opacity 0.2s;
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+@media (prefers-color-scheme: light) {
+  .custom-spinner {
+    background: rgba(0,0,0,0.05);
+  }
+}
+
+.input-wrapper:hover .custom-spinner {
+  opacity: 1;
+}
+
+.spinner-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-h);
+  padding: 2px 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-btn:hover {
+  background: rgba(255,255,255,0.1);
+  color: var(--accent);
+}
+
+@media (prefers-color-scheme: light) {
+  .spinner-btn:hover {
+    background: rgba(0,0,0,0.1);
+  }
+}
+
+.spinner-icon {
+  width: 10px;
+  height: 10px;
+}
+
 .input-label {
   font-size: 0.8rem;
   text-transform: uppercase;
