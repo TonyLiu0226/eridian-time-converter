@@ -94,6 +94,11 @@ function App() {
     setFinalTimeResult(timeStr);
   }
 
+  const handleEarthChange = (value: string) => {
+    setEarthTime(value);
+    setAmountTime({years: 0, months: 0, days: 0, hours: 0, minutes: 0, seconds: 0});
+  };
+    
   const handleAmountChange = (field: keyof typeof amountTime, value: string) => {
     setAmountTime(prev => ({ ...prev, [field]: Number(value) }));
   };
@@ -107,6 +112,20 @@ function App() {
       getEridianTimeDifference();
     }
   }, [earthTime, refEpoch]);
+
+  //adds the specified amountTime offset to the current time
+  useEffect(() => {
+    if (amountTime.years > 0 || amountTime.months > 0 || amountTime.days > 0 || amountTime.hours > 0 || amountTime.minutes > 0 || amountTime.seconds > 0) {
+      let newTime = new Date();
+      newTime.setFullYear(newTime.getFullYear() + amountTime.years);
+      newTime.setMonth(newTime.getMonth() + amountTime.months);
+      newTime.setDate(newTime.getDate() + amountTime.days);
+      newTime.setHours(newTime.getHours() + amountTime.hours);
+      newTime.setMinutes(newTime.getMinutes() + amountTime.minutes);
+      newTime.setSeconds(newTime.getSeconds() + amountTime.seconds);
+      setEarthTime(newTime.toISOString().slice(0, -1));
+    }
+  }, [amountTime, refEpoch]);
 
   return (
     <div className="app-container">
@@ -140,9 +159,10 @@ function App() {
                   type="datetime-local" 
                   step="1"
                   value={earthTime} 
-                  onChange={(e) => setEarthTime(e.target.value)} 
+                  onChange={(e) => handleEarthChange(e.target.value)} 
                   className="input-field"
                 />
+                <button className="now-button" onClick={() => handleEarthChange(new Date().toISOString().slice(0, -1))}>NOW</button>
               </div>
 
               <div className="form-group">

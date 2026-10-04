@@ -251,6 +251,25 @@
   font-weight: 600;
 }
 
+.now-button {
+  margin: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background-color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 2px;
+  color: #ffffff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  width: 50%;
+  box-sizing: border-box;
+  align-self: center;
+}
+
+.now-button:hover {
+  opacity: 0.8;
+}
+
 .flex-row {
   display: flex;
   flex-wrap: wrap;
@@ -266,9 +285,9 @@
 }
 
 .result-time {
-  font-size: 1.7rem;
-  font-weight: 800;
-  color: #ffffff;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--accent);
 }
 
 .radio-group {
